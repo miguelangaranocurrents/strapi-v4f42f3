@@ -625,6 +625,9 @@ const RelationsInput = ({
        *
        */
       onChange(relation);
+
+      // The search text is cleared once a relation is selected, so reset the search as well
+      setSearchParams((s) => (s._q === '' && s.page === 1 ? s : { ...s, _q: '', page: 1 }));
     },
     [data, formatMessage, onChange, toggleNotification]
   );
@@ -797,7 +800,13 @@ const RelationModalWithContext = ({
           }
           hasMoreItems={hasNextPage}
           loading={isLoadingSearchRelations || isLoadingPermissions}
-          onOpenChange={() => {
+          onOpenChange={(isOpen?: boolean) => {
+            // Only refresh the search when opening; closing after a selection would otherwise
+            // search for the selected option's label and leave stale results behind.
+            if (isOpen === false) {
+              return;
+            }
+
             handleSearch(textValue ?? '');
           }}
           noOptionsMessage={() =>
